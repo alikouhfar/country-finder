@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Favicon -->
+  <link type="image/png" sizes="16x16" rel="icon" href="src/img/favicon-16.png">
+  <link type="image/png" sizes="32x32" rel="icon" href="src/img/favicon-32.png">
+  <link type="image/png" sizes="96x96" rel="icon" href="src/img/favicon-96.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="src/styles/style.css" />
+
+  <!-- Responsive -->
+  <link rel="stylesheet" href="src/styles/responsive.css" />
+
+  <!-- Leaflet CSS | JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+  <!-- JavaScript -->
+  <script defer src="src/js/main.js"></script>
+  
+  <title>Country Finder</title>
+</head>
+
+<body>
+  <h2 class="warning hidden">
+    please use a pc or laptop for best performance
+  </h2>
+  <div id="app">
+
+    <!-- LEFT CONTAINER -->
+    <section class="left__container">
+      <div class="searchbar__container">
+        <form class="search__form">
+          <input class="search__term" type="text" placeholder="Country Name..." />
+          <button class="search__submit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+              viewBox="0 0 16 16">
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- All Countries List Section -->
+      <section class="countries__list--section">
+          <ul class="countries__list">
+            <!-- <li class="country__card--glance">
+              <img
+                src="https://flagcdn.com/de.svg"
+                alt=""
+                srcset=""
+                width="55px"
+              />
+              <div class="country__glance--data">
+                <h2 class="country__glance--name">Germany</h2>
+                <h3 class="country__glance--capital">Berlin</h3>
+              </div>
+            </li> -->
+          </ul>
+        </section>
+
+      <!-- Country Container Section -->
+      <section class="country__container--section hidden">
+        <!-- <div class="country__card">
+          <img src="https://flagcdn.com/de.svg" alt="" class="country__card--flag" />
+          <div class="country__data">
+            <div class="data__section">
+              <h2 class="country__name">Germany</h2>
+              <h3 class="country__capital">Berlin - Europe</h3>
+            </div>
+            <ul class="data__section">
+              <li>🗣️German</li>
+            </ul>
+            <ul class="data__section">
+              <li>🪙Euro - €</li>
+            </ul>
+            <ul class="data__section">
+              <li>👨🏼‍🤝‍🧑🏾83240525 - 🗺️357114</li>
+            </ul>
+          </div>
+        </div> -->
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="copyright">
+        <span class="current__year">Year</span> &copy; Copyright by
+        <a class="github-link" target="_blank" href="https://github.com/alikouhfar">Ali Kouhfar</a>
+      </footer>
+    </section>
+
+    <!-- RIGHT CONTAINER -->
+    <section class="right__container">
+
+      <!-- Map Section -->
+      <section id="map"></section>
+
+      <!-- Neighbors Section -->
+      <section>
+        <h2 class="neighbors__list--title hidden">Neighbors</h2>
+        <section class="neighbors__list--section">
+          <ul class="neighbors__list">
+            <!-- <li class="neighbor__card">
+              <img src="https://flagcdn.com/pl.svg" alt="" height="120px" class="neighbor__flag" />
+              <div class="neighbor__data">
+                <h2 class="neighbor__name">Poland</h2>
+                <h3 class="neighbor__capital">Warsaw</h3>
+              </div>
+            </li> -->
+          </ul>
+        </section>
+      </section>
+  </div>
+  </div>
+
+  <!-- EXTRA CONTENT -->
+  <h3 class="error__container hidden"></h3>
+  <div class="loading__spinner hidden">
+    <div class="loader"></div>
+  </div>
+</body>
+
+</html>

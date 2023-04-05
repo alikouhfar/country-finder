@@ -1,0 +1,17 @@
+@media (max-width: 1000px) {
+  .warning {
+    color: #242424;
+    display: flex;
+    font-size: 2rem;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+    text-transform: uppercase;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  #app {
+    display: none;
+  }
+}
