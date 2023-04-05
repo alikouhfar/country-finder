@@ -159,14 +159,12 @@ class App {
   async fetchNeighbor(neighbor) {
     const parentElement = ".neighbors__list";
     try {
-      this.renderSpinner(parentElement);
       const response = await fetch(
         `https://restcountries.com/v3.1/alpha/${neighbor}`
       );
       if (!response.ok) {
         throw new Error("Country not found");
       }
-      this.clear([parentElement]);
       const data = await response.json();
       this.neighborView.render(data[0]);
     } catch (error) {
