@@ -71,11 +71,14 @@ button {
   gap: 4px;
 }
 
-.loading__spinner {
+.loading__spinner,
+.error__container {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .loader {

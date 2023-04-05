@@ -3,7 +3,7 @@ const inputTerm = document.querySelector(".search__term");
 const formSubmit = document.querySelector(".search__submit");
 const countryListContainer = document.querySelector(".countries__list");
 const countryContainer = document.querySelector(".country__container--section");
-const neighborsTitle = document.querySelector(".neighbors__container--title");
+const neighborsTitle = document.querySelector(".neighbors__list--title");
 const neighborsContainer = document.querySelector(".neighbors__list");
 const yearContainer = document.querySelector(".current__year");
 
@@ -18,22 +18,30 @@ class App {
     formSubmit.addEventListener("click", this.searchCountry.bind(this));
     countryListContainer.addEventListener(
       "click",
-      this.renderSelectedCountry.bind(this)
+      this.controlSelectedCountry.bind(this)
     );
     neighborsContainer.addEventListener(
       "click",
-      this.renderSelectedCountry.bind(this)
+      this.controlSelectedCountry.bind(this)
     );
   }
 
   renderSpinner(parentElement) {
     document.querySelector(parentElement).innerHTML = "";
-    const markup = `
-      <div class="loading__spinner">
-        <div class="loader"></div>
-      </div>
+    const generateMarkup = `
+        <div class="loading__spinner">
+          <div class="loader"></div>
+        </div>
+      `;
+    document.querySelector(parentElement).innerHTML = generateMarkup;
+  }
+
+  renderError(parentElement, error) {
+    document.querySelector(parentElement).innerHTML = "";
+    const generateMarkup = `
+      <h3 class="error__container">${error}</h3>
     `;
-    document.querySelector(parentElement).innerHTML = markup;
+    document.querySelector(parentElement).innerHTML = generateMarkup;
   }
 
   clear(parentElements) {
@@ -87,10 +95,12 @@ class App {
 
   // Fetch All Countries
   async fetchAllCountries() {
+    const parentElement = ".countries__list";
     try {
-      this.renderSpinner(".countries__list");
+      this.renderSpinner(parentElement);
       const response = await fetch("https://restcountries.com/v3.1/all");
-      this.clear([".countries__list"]);
+      this.clear([parentElement]);
+      if (!response.ok) throw new Error("data could not be fetched");
       const data = await response.json();
       this.state.countries = data;
       this.state.countries.sort(function compareFn(a, b) {
@@ -102,9 +112,11 @@ class App {
         }
         return 0;
       });
-      this.state.countries.map((element) => this.renderCountryGlance(element));
+      this.state.countries.map((element) =>
+        this.countryGlanceView.render(element)
+      );
     } catch (error) {
-      console.error(error.message);
+      this.renderError(parentElement, `something went wrong! ${error.message}`);
     }
   }
 
@@ -119,50 +131,69 @@ class App {
 
   // Fetch Country
   async fetchCountry(country) {
+    const parentElement = ".country__container--section";
     try {
-      this.renderSpinner(".country__container--section");
+      this.renderSpinner(parentElement);
       const response = await fetch(
         `https://restcountries.com/v3.1/name/${country}`
       );
       if (!response.ok) {
-        throw new Error("Country not found.");
+        throw new Error("Country not found");
       }
-      this.clear([".country__container--section", ".neighbors__list"]);
+      this.clear([parentElement, ".neighbors__list"]);
       const data = await response.json();
       const result = data.filter(
         (element) => element.name.common.toLowerCase() === country.toLowerCase()
       );
       if (result[0] === undefined) {
-        throw new Error("You should search for common country name.");
+        throw new Error("you should search for a common country name");
       }
-      this.renderCountryAndNeighbor(result[0]);
+      this.controlCountryAndNeighbor(result[0]);
     } catch (error) {
       console.error(error.message);
+      this.renderError(parentElement, `something went wrong! ${error.message}`);
     }
   }
 
-  // Render Country And Neighbor
-  renderCountryAndNeighbor(country) {
+  // Fetch Neighbor
+  async fetchNeighbor(neighbor) {
+    const parentElement = ".neighbors__list";
+    try {
+      this.renderSpinner(parentElement);
+      const response = await fetch(
+        `https://restcountries.com/v3.1/alpha/${neighbor}`
+      );
+      if (!response.ok) {
+        throw new Error("Country not found");
+      }
+      this.clear([parentElement]);
+      const data = await response.json();
+      this.neighborView.render(data[0]);
+    } catch (error) {
+      this.renderError(parentElement, `something went wrong! ${error.message}`);
+    }
+  }
+
+  // Control Country And Neighbor
+  controlCountryAndNeighbor(country) {
     try {
       const { latlng } = country;
       this.loadMap(latlng, country.area);
-      this.renderCountryDetail(country);
+      this.countryDetailView.render(country);
       if (!country.borders) {
-        throw new Error("No neighbors for this country");
+        neighborsTitle.classList.add("hidden");
+        throw new Error("this country has no neighbors");
       }
+      neighborsTitle.classList.remove("hidden");
       this.state.neighbors = country.borders;
-      this.state.neighbors.map((neighbor) => {
-        fetch(`https://restcountries.com/v3.1/alpha/${neighbor}`)
-          .then((response) => response.json())
-          .then((data) => this.renderNeighbor(data[0]));
-      });
+      this.state.neighbors.map((neighbor) => this.fetchNeighbor(neighbor));
     } catch (error) {
-      console.error(error.message);
+      this.renderError(".neighbors__list", error.message);
     }
   }
 
-  // Render Selected Country
-  renderSelectedCountry(e) {
+  // Control Selected Country
+  controlSelectedCountry(e) {
     const card = e.target.closest(".card__glance");
     if (!card) return;
     const country = this.state.countries.find(
@@ -171,91 +202,106 @@ class App {
     );
     this.reveal(".countries__list--section", ".country__container--section");
     this.clear([".neighbors__list"]);
-    this.renderCountryAndNeighbor(country);
+    this.controlCountryAndNeighbor(country);
   }
 
-  // Render Country Glance
-  renderCountryGlance(country) {
-    const html = `
-      <li class="card__glance country__card--glance" data-name=${country.name.common.replaceAll(
-        " ",
-        "_"
-      )}>
-        <img
-          src=${country.flags.svg}
-          alt=${country.flags.alt}
-          class="country__glance--flag"
-        />
-        <div class="country__glance--data">
-          <h2 class="country__glance--name">${country.name.common}</h2>
-          <h3 class="country__glance--capital">${
-            country.capital ?? "No Data"
-          }</h3>
-        </div>
-      </li>
-      `;
-    countryListContainer.insertAdjacentHTML("beforeend", html);
-  }
-
-  // Render Country Detailed
-  renderCountryDetail(country) {
-    const html = `
-    <div class="country__card">
+  // Country Glance View
+  countryGlanceView = {
+    generateMarkup(country) {
+      return `
+    <li class="card__glance country__card--glance" data-name=${country.name.common.replaceAll(
+      " ",
+      "_"
+    )}>
       <img
         src=${country.flags.svg}
         alt=${country.flags.alt}
-        class="country__card--flag" />
-      <div class="country__data">
-        <div class="data__section">
-          <h2 class="country__name">${country.name.official}</h2>
-          <h3 class="country__capital">${country.capital ?? "No Data"} - ${
-      country.region
-    }</h3>
-        </div>
-        <ul class="data__section">
-          ${
-            country.languages
-              ? Object.values(country.languages)
-                  .map((language) => {
-                    return `
-          <li>🗣️${language}</li>
-          `;
-                  })
-                  .join("")
-              : "No Language Data Found!"
-          }
-        </ul>
-        <ul class="data__section">
-          ${
-            country.currencies
-              ? Object.values(country.currencies)
-                  .map((currency) => {
-                    return `
-          <li>🪙${currency.name} - ${currency.symbol}</li>
-          `;
-                  })
-                  .join("")
-              : "No Currency Data Found!"
-          }
-        </ul>
-        <ul class="data__section">
-          <li>👨🏼‍🤝‍🧑🏾${new Intl.NumberFormat("en-US", {
-            notation: "compact",
-            maximumFractionDigits: 3,
-          }).format(country.population)} - 🗺️${new Intl.NumberFormat("en-US", {
-      notation: "compact",
-      maximumFractionDigits: 3,
-    }).format(country.area)}</li>
-        </ul>
+        class="country__glance--flag"
+      />
+      <div class="country__glance--data">
+        <h2 class="country__glance--name">${country.name.common}</h2>
+        <h3 class="country__glance--capital">${
+          country.capital ?? "No Data"
+        }</h3>
       </div>
-    </div>
-  `;
-    countryContainer.innerHTML = html;
-  }
+    </li>
+    `;
+    },
+    render(country) {
+      countryListContainer.insertAdjacentHTML(
+        "beforeend",
+        this.generateMarkup(country)
+      );
+    },
+  };
 
-  // Render Neighbor
-  renderNeighbor(neighbor) {
-    const html = `
+  // Country Detail View
+  countryDetailView = {
+    generateMarkup(country) {
+      return `
+      <div class="country__card">
+        <img
+          src=${country.flags.svg}
+          alt=${country.flags.alt}
+          class="country__card--flag" />
+        <div class="country__data">
+          <div class="data__section">
+            <h2 class="country__name">${country.name.official}</h2>
+            <h3 class="country__capital">${country.capital ?? "No Data"} - ${
+        country.region
+      }</h3>
+          </div>
+          <ul class="data__section">
+            ${
+              country.languages
+                ? Object.values(country.languages)
+                    .map((language) => {
+                      return `
+            <li>🗣️${language}</li>
+            `;
+                    })
+                    .join("")
+                : "No Language Data Found!"
+            }
+          </ul>
+          <ul class="data__section">
+            ${
+              country.currencies
+                ? Object.values(country.currencies)
+                    .map((currency) => {
+                      return `
+            <li>🪙${currency.name} - ${currency.symbol}</li>
+            `;
+                    })
+                    .join("")
+                : "No Currency Data Found!"
+            }
+          </ul>
+          <ul class="data__section">
+            <li>👨🏼‍🤝‍🧑🏾${new Intl.NumberFormat("en-US", {
+              notation: "compact",
+              maximumFractionDigits: 3,
+            }).format(country.population)} - 🗺️${new Intl.NumberFormat(
+        "en-US",
+        {
+          notation: "compact",
+          maximumFractionDigits: 3,
+        }
+      ).format(country.area)}</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    },
+    render(country) {
+      countryContainer.innerHTML = this.generateMarkup(country);
+    },
+  };
+
+  // Neighbor View
+  neighborView = {
+    generateMarkup(neighbor) {
+      return `
       <li class="card__glance neighbor__card" style="display:${
         !this.loading ? "block" : "none"
       }" data-name=${neighbor.name.common.replaceAll(" ", "_")}>
@@ -272,8 +318,14 @@ class App {
         </div>
       </li>
     `;
-    neighborsContainer.insertAdjacentHTML("beforeend", html);
-  }
+    },
+    render(neighbor) {
+      neighborsContainer.insertAdjacentHTML(
+        "beforeend",
+        this.generateMarkup(neighbor)
+      );
+    },
+  };
 }
 
 const app = new App();
