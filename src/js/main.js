@@ -330,6 +330,7 @@ class App {
 
 const app = new App();
 
+// Clear Content if not PC
 if (appContainer.clientWidth < 1000) {
   appContainer.innerHTML = "";
 }
